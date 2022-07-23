@@ -58,61 +58,37 @@ public final class GeyserBlackBE extends JavaPlugin {
             logger.info("开始检测玩家 " + plName + "（XUID：" + xuid + "） 的BlackBE违规记录");
             api.check(plName, xuid).enqueue(new Callback<>() {
                 @Override
-                public void onResponse(
-                        @NotNull Call<BlackBEAPI.Response> call,
-                        @NotNull Response<BlackBEAPI.Response> response
-                ) {
+                public void onResponse(@NotNull Call<BlackBEAPI.Response> call, @NotNull Response<BlackBEAPI.Response> response) {
                     BlackBEAPI.Response ret = response.body();
                     if (ret == null) {
                         logger.warning("检测玩家 " + plName + " 的BlackBE违规记录失败：返回值为空");
                         return;
                     }
 
-                    if (ret.success()) {
-                        BlackBEAPI.Response.Data data = ret.data();
-                        if (data.exist()) {
-                            BlackBEAPI.Response.Info info = data.info().get(0);
-                            javaPl.kick(
-                                    Component.text(
-                                            "检测到您在 BlackBE 存在违规记录，已将您断开连接！",
-                                            TextColor.color(255, 85, 85)
-                                    )
-                            );
+                    if (ret.getSuccess()) {
+                        BlackBEAPI.Response.Data data = ret.getData();
+                        if (data.getExist()) {
+                            BlackBEAPI.Response.Info info = data.getInfo().get(0);
+                            javaPl.kick(Component.text("检测到您在 BlackBE 存在违规记录，已将您断开连接！", TextColor.color(255, 85, 85)));
 
-                            short lvl = info.level();
+                            int lvl = info.getLevel();
                             String lvlDesc = BlackBEAPI.getLevelDesc(lvl);
                             Component comp = Component.empty();
-                            comp = comp.append(Component.text(
-                                    "检测到玩家 " + plName + " 在BlackBE存在违规记录！\n",
-                                    TextColor.color(255, 85, 85)
-                            ));
-                            comp = comp.append(Component.text(
-                                    "违规等级：" + lvl + "（" + lvlDesc + "）\n" +
-                                            "违规原因：" + info.info() + "\n" +
-                                            "玩家QQ：" + info.qq(),
-                                    TextColor.color(0, 170, 170)
-                            ));
+                            comp = comp.append(Component.text("检测到玩家 " + plName + " 在BlackBE存在违规记录！\n", TextColor.color(255, 85, 85)));
+                            comp = comp.append(Component.text("违规等级：" + lvl + "（" + lvlDesc + "）\n" + "违规原因：" + info.getInfo() + "\n" + "玩家QQ：" + info.getQq(), TextColor.color(0, 170, 170)));
                             logger.warning(componentToStr(comp));
                             GeyserBlackBE.this.getServer().broadcast(comp);
                         } else {
                             logger.info("玩家 " + plName + " 没有BlackBE违规记录");
                         }
                     } else {
-                        logger.warning("检测玩家 " + plName + " 的BlackBE违规记录失败：" +
-                                "[" + ret.status() + "] " + ret.message());
+                        logger.warning("检测玩家 " + plName + " 的BlackBE违规记录失败：" + "[" + ret.getStatus() + "] " + ret.getMessage());
                     }
                 }
 
                 @Override
-                public void onFailure(
-                        @NotNull Call<BlackBEAPI.Response> call,
-                        @NotNull Throwable throwable
-                ) {
-                    logger.log(
-                            Level.WARNING,
-                            "检测玩家 " + plName + " 的BlackBE违规记录失败！",
-                            throwable
-                    );
+                public void onFailure(@NotNull Call<BlackBEAPI.Response> call, @NotNull Throwable throwable) {
+                    logger.log(Level.WARNING, "检测玩家 " + plName + " 的BlackBE违规记录失败！", throwable);
                 }
             });
         }
