@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.geysermc.floodgate.api.FloodgateApi;
+import org.geysermc.floodgate.api.player.FloodgatePlayer;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -26,7 +27,7 @@ public final class GeyserBlackBE extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerJoin(), this);
 
-        getLogger().info("PaperBlackBE Loaded.");
+        getLogger().info("GeyserBlackBE Loaded.");
     }
 
     public class PlayerJoin implements Listener {
@@ -42,15 +43,16 @@ public final class GeyserBlackBE extends JavaPlugin {
         public void onPlayerJoin(@NotNull PlayerJoinEvent ev) {
             Logger logger = GeyserBlackBE.this.getLogger();
             FloodgateApi floodgate = FloodgateApi.getInstance();
-            Player pl = ev.getPlayer();
-            String plName = pl.getName();
+            Player javaPl = ev.getPlayer();
 
-            if (!floodgate.isFloodgatePlayer(pl.getUniqueId())) {
-                logger.info("玩家 " + plName + " 并不是从Geyser加入服务器的基岩版玩家，跳过检测BlackBE违规记录");
+            if (!floodgate.isFloodgatePlayer(javaPl.getUniqueId())) {
+                logger.info("玩家 " + javaPl.getName() + " 并不是从Geyser加入服务器的基岩版玩家，跳过检测BlackBE违规记录");
                 return;
             }
 
-            String xuid = floodgate.getXuidFor(plName).toString();
+            FloodgatePlayer pl = floodgate.getPlayer(javaPl.identity().uuid());
+            String plName = pl.getUsername();
+            String xuid = pl.getXuid();
             BlackBEAPI.API api = new BlackBEAPI().getAPI();
 
             logger.info("开始检测玩家 " + plName + "（XUID：" + xuid + "） 的BlackBE违规记录");
@@ -70,7 +72,7 @@ public final class GeyserBlackBE extends JavaPlugin {
                         BlackBEAPI.Response.Data data = ret.data();
                         if (data.exist()) {
                             BlackBEAPI.Response.Info info = data.info().get(0);
-                            pl.kick(
+                            javaPl.kick(
                                     Component.text(
                                             "检测到您在 BlackBE 存在违规记录，已将您断开连接！",
                                             TextColor.color(255, 85, 85)

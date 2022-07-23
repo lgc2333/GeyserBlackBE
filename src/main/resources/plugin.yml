@@ -1,5 +1,7 @@
-name: PaperBlackBE
+name: GeyserBlackBE
 main: top.lgc2333.geyserblackbe.GeyserBlackBE
 version: 0.1.0
 description: Exercise
 author: student_2333
+depend:
+  - Geyser-Spigot
